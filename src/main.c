@@ -130,29 +130,29 @@ int main (const int argc, const char *argv[]) {
     bool sig_enabled[signal_cnt];
     memset(sig_enabled, false, signal_cnt);
 
-    help();
-
     for (int i = 1; i < argc; i++) {
         // flags
         {
-            for (size_t j = 1; j < strlen(argv[i]); j++) {
-                switch (argv[i][j]) {
-                    case 'h': {
-                        help();
-                        break;
-                    }
+            if (argv[i][0] == '-') {
+                for (size_t j = 1; j < strlen(argv[i]); j++) {
+                    switch (argv[i][j]) {
+                        case 'h': {
+                            help();
+                            break;
+                        }
 
-                    case 'n': {
-                        print_msg = false;
-                        break;
-                    }
+                        case 'n': {
+                            print_msg = false;
+                            break;
+                        }
 
-                    default: {
-                        char msg[48] = {0};
-                        snprintf(msg, sizeof(msg), "invalid '%c' flag used.\nuse '-h' for help",
-                            argv[i][j]);
-                        error(msg, false);
-                        break;
+                        default: {
+                            char msg[48] = {0};
+                            snprintf(msg, sizeof(msg), "invalid '%c' flag used.\nuse '-h' for help",
+                                argv[i][j]);
+                            error(msg, false);
+                            break;
+                        }
                     }
                 }
             }
