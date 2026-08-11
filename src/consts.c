@@ -3,208 +3,208 @@
 #include "defs.h"
 
 const signal_s signals[] = {
-    {
-        .string = "",
-        .sig    = 0,
-    },
+	{
+		.string = "",
+		.sig	= 0,
+	},
 
-    {
-        .string = "HUP",
-        .sig    = SIGHUP,
-    },
+	{
+		.string = "HUP",
+		.sig	= SIGHUP,
+	},
 
-    {
-        .string = "INT",
-        .sig    = SIGINT,
-    },
+	{
+		.string = "INT",
+		.sig	= SIGINT,
+	},
 
-    {
-        .string = "QUIT",
-        .sig    = SIGQUIT,
-    },
+	{
+		.string = "QUIT",
+		.sig	= SIGQUIT,
+	},
 
-    {
-        .string = "ILL",
-        .sig    = SIGILL,
-    },
+	{
+		.string = "ILL",
+		.sig	= SIGILL,
+	},
 
-    {
-        .string = "TRAP",
-        .sig    = SIGTRAP,
-    },
+	{
+		.string = "TRAP",
+		.sig	= SIGTRAP,
+	},
 
-    {
-        .string = "ABRT",
-        .sig    = SIGABRT,
-    },
+	{
+		.string = "ABRT",
+		.sig	= SIGABRT,
+	},
 
-    {
-        .string = "IOT",
-        .sig    = SIGIOT,
-    },
+	{
+		.string = "IOT",
+		.sig	= SIGIOT,
+	},
 
-    {
-        .string = "BUS",
-        .sig    = SIGBUS,
-    },
+	{
+		.string = "BUS",
+		.sig	= SIGBUS,
+	},
 
-    /*
-    {
-        .string = "EMT",
-        .sig    = SIGEMT,
-    },
-    */
+	/*
+	{
+		.string = "EMT",
+		.sig	= SIGEMT,
+	},
+	*/
 
-    {
-        .string = "FPE",
-        .sig    = SIGFPE,
-    },
+	{
+		.string = "FPE",
+		.sig	= SIGFPE,
+	},
 
-    {
-        .string = "KILL",
-        .sig    = SIGKILL,
-    },
+	{
+		.string = "KILL",
+		.sig	= SIGKILL,
+	},
 
-    {
-        .string = "USR1",
-        .sig    = SIGUSR1,
-    },
+	{
+		.string = "USR1",
+		.sig	= SIGUSR1,
+	},
 
-    {
-        .string = "SEGV",
-        .sig    = SIGSEGV,
-    },
+	{
+		.string = "SEGV",
+		.sig	= SIGSEGV,
+	},
 
-    {
-        .string = "USR2",
-        .sig    = SIGUSR2,
-    },
+	{
+		.string = "USR2",
+		.sig	= SIGUSR2,
+	},
 
-    {
-        .string = "PIPE",
-        .sig    = SIGPIPE,
-    },
+	{
+		.string = "PIPE",
+		.sig	= SIGPIPE,
+	},
 
-    {
-        .string = "ALRM",
-        .sig    = SIGALRM,
-    },
+	{
+		.string = "ALRM",
+		.sig	= SIGALRM,
+	},
 
-    {
-        .string = "TERM",
-        .sig    = SIGTERM,
-    },
+	{
+		.string = "TERM",
+		.sig	= SIGTERM,
+	},
 
-    {
-        .string = "STKFLT",
-        .sig    = SIGSTKFLT,
-    },
+	{
+		.string = "STKFLT",
+		.sig	= SIGSTKFLT,
+	},
 
-    {
-        .string = "CHLD",
-        .sig    = SIGCHLD,
-    },
+	{
+		.string = "CHLD",
+		.sig	= SIGCHLD,
+	},
 
-    {
-        .string = "CLD",
-        .sig    = SIGCLD,
-    },
+	{
+		.string = "CLD",
+		.sig	= SIGCLD,
+	},
 
-    {
-        .string = "CONT",
-        .sig    = SIGCONT,
-    },
+	{
+		.string = "CONT",
+		.sig	= SIGCONT,
+	},
 
-    {
-        .string = "STOP",
-        .sig    = SIGSTOP,
-    },
+	{
+		.string = "STOP",
+		.sig	= SIGSTOP,
+	},
 
-    {
-        .string = "TSTP",
-        .sig    = SIGTSTP,
-    },
+	{
+		.string = "TSTP",
+		.sig	= SIGTSTP,
+	},
 
-    {
-        .string = "TTIN",
-        .sig    = SIGTTIN,
-    },
+	{
+		.string = "TTIN",
+		.sig	= SIGTTIN,
+	},
 
-    {
-        .string = "TTOU",
-        .sig    = SIGTTOU,
-    },
+	{
+		.string = "TTOU",
+		.sig	= SIGTTOU,
+	},
 
-    {
-        .string = "URG",
-        .sig    = SIGURG,
-    },
+	{
+		.string = "URG",
+		.sig	= SIGURG,
+	},
 
-    {
-        .string = "XCPU",
-        .sig    = SIGXCPU,
-    },
+	{
+		.string = "XCPU",
+		.sig	= SIGXCPU,
+	},
 
-    {
-        .string = "XFSZ",
-        .sig    = SIGXFSZ,
-    },
+	{
+		.string = "XFSZ",
+		.sig	= SIGXFSZ,
+	},
 
-    {
-        .string = "VTALRM ",
-        .sig    = SIGVTALRM,
-    },
+	{
+		.string = "VTALRM ",
+		.sig	= SIGVTALRM,
+	},
 
-    {
-        .string = "PROF",
-        .sig    = SIGPROF,
-    },
+	{
+		.string = "PROF",
+		.sig	= SIGPROF,
+	},
 
-    {
-        .string = "WINCH",
-        .sig    = SIGWINCH,
-    },
+	{
+		.string = "WINCH",
+		.sig	= SIGWINCH,
+	},
 
-    {
-        .string = "IO",
-        .sig    = SIGIO,
-    },
+	{
+		.string = "IO",
+		.sig	= SIGIO,
+	},
 
-    {
-        .string = "POLL",
-        .sig    = SIGPOLL,
-    },
+	{
+		.string = "POLL",
+		.sig	= SIGPOLL,
+	},
 
-    {
-        .string = "PWR",
-        .sig    = SIGPWR,
-    },
+	{
+		.string = "PWR",
+		.sig	= SIGPWR,
+	},
 
-    /*
-    {
-        .string = "INFO",
-        .sig    = SIGINFO,
-    },
-    */
+	/*
+	{
+		.string = "INFO",
+		.sig	= SIGINFO,
+	},
+	*/
 
-    /*
-    {
-        .string = "LOST",
-        .sig    = SIGLOST,
-    },
-    */
+	/*
+	{
+		.string = "LOST",
+		.sig	= SIGLOST,
+	},
+	*/
 
-    {
-        .string = "SYS",
-        .sig    = SIGSYS,
-    },
+	{
+		.string = "SYS",
+		.sig	= SIGSYS,
+	},
 
-    /*
-    {
-        .string = "UNUSED",
-        .sig    = SIGUNUSED,
-    },
-    */
+	/*
+	{
+		.string = "UNUSED",
+		.sig	= SIGUNUSED,
+	},
+	*/
 };
 
 const size_t signal_cnt = sizeof(signals) / sizeof(signals[0]);
@@ -212,24 +212,24 @@ const size_t signal_cnt = sizeof(signals) / sizeof(signals[0]);
 #ifndef SHORT_WEEKDAYS
 #ifndef CAPITALIZED_WEEKDAYS
 const char *weekdays[] = {
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
+	"Sunday",
+	"Monday",
+	"Tuesday",
+	"Wednesday",
+	"Thursday",
+	"Friday",
+	"Saturday",
 };
 
 #else
 const char *weekdays[] = {
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
+	"SUNDAY",
+	"MONDAY",
+	"TUESDAY",
+	"WEDNESDAY",
+	"THURSDAY",
+	"FRIDAY",
+	"SATURDAY",
 };
 
 #endif // CAPITALIZED_WEEKDAYS
@@ -237,24 +237,24 @@ const char *weekdays[] = {
 #else
 #ifndef CAPITALIZED_WEEKDAYS
 const char *weekdays[] = {
-    "Sun",
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
+	"Sun",
+	"Mon",
+	"Tue",
+	"Wed",
+	"Thu",
+	"Fri",
+	"Sat",
 };
 
 #else
 const char *weekdays[] = {
-    "SUN",
-    "MON",
-    "TUE",
-    "WED",
-    "THU",
-    "FRI",
-    "SAT",
+	"SUN",
+	"MON",
+	"TUE",
+	"WED",
+	"THU",
+	"FRI",
+	"SAT",
 };
 
 #endif // CAPITALIZED_WEEKDAYS
