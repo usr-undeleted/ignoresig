@@ -110,8 +110,13 @@ void handler(int sig, siginfo_t *info, void *ucontext) {
 			}
 		}
 
-		printf("[%.*s]: Received SIG%s (%d) from %d (%s)\n", (int)sizeof(formatted_time), formatted_time,
-			sig_to_str(sig), sig, info->si_pid == 0 ? access_own_pid() : info->si_pid, signal_sender_name);
+		int sender = info->si_pid == 0 ? access_own_pid() : info->si_pid;
+		printf("[%.*s]: Received SIG%6s (\x1b[3%dm%d\x1b[0m) from \x1b[3%dm%d\x1b[0m (%s)\n",
+			(int)sizeof(formatted_time), formatted_time,
+			sig_to_str(sig),
+			sig    % 7 + 1, sig,
+			sender % 7 + 1, sender,
+			signal_sender_name);
 	}
 }
 

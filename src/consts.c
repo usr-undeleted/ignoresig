@@ -151,7 +151,7 @@ const signal_s signals[] = {
 	},
 
 	{
-		.string = "VTALRM ",
+		.string = "VTALRM",
 		.sig	= SIGVTALRM,
 	},
 
