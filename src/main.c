@@ -32,9 +32,9 @@ void help(void) {
 		"\n"
 
 		BOLD "flags:\n" RESET
-		BOLD "\t-h" RESET ": show this help message.\n"
-		BOLD "\t-n" RESET ": don't show a message when receiving a signal.\n"
-		BOLD "\t-s <sig>" RESET ": send a specific signal to whoever sent the original signal.\n"
+		BOLD "\t-h or --help" RESET ": show this help message.\n"
+		BOLD "\t-n or --no-msg" RESET ": don't show a message when receiving a signal.\n"
+		BOLD "\t-s or --signal <sig>" RESET ": send a specific signal to whoever sent the original signal.\n"
 		"\n"
 
 		BOLD "usage:\n" RESET
@@ -44,7 +44,7 @@ void help(void) {
 		"\tSignals to be specified may be any of the valid POSIX linux signals,"
 		"where they will be ignored and shown a message (if enabled), showing who"
 		" sent the signal, and what signal. A signal may be written as its number,"
-		" name, or SIG followed by the name."
+		" name, or SIG directly followed by the name.\n"
 		"\tThere's no case-sensitivity on signal arguments.\n"
 		"\tClicking enter will end execution.\n"
 		"\n"
@@ -148,8 +148,32 @@ void handler(int sig, siginfo_t *info, void *ucontext) {
 	}
 }
 
+int set_return_signal(const char *argv[], const int i) {
+	if (!argv[i + 1]) {
+		fprintf(stderr, "%s: signal argument doesn't exist.\n",
+			basename((char *)argv[0]));
+		return 1;
+	}
+
+	if (!return_sig) {
+		return_sig = arg_to_sig(argv[i + 1]);
+		if (!return_sig) {
+			fprintf(stderr, "%s: signal argument \"%s\" is not a valid signal.\n",
+				basename((char *)argv[0]), argv[i + 1]);
+		}
+		return 1;
+
+	} else {
+		fprintf(stderr, "%s: signal argument will be ignored (has already been set).\n",
+			basename((char *)argv[0]));
+		return 1;
+	}
+
+	return 0;
+}
+
 int main (const int argc, const char *argv[]) {
-	glob_invoc	 = argv[0];
+	glob_invoc	   = argv[0];
 	glob_invoc_len = strlen(argv[0]);
 	bool fail = true;
 
@@ -165,7 +189,28 @@ int main (const int argc, const char *argv[]) {
 		}
 
 		// flags
-		if (argv[i][0] == '-') {
+		if (!strncmp(argv[i], "--", 2)) {
+			// full flags
+			if (!strcmp(argv[i], "--help")) {
+				help();
+
+			} else if (!strcmp(argv[i], "--no-msg")) {
+				print_msg = false;
+
+			} else if (!strcmp(argv[i], "--signal")) {
+				if (set_return_signal(argv, i) == 0) {
+					sig_flag_used = true;
+				}
+				i++;
+				continue;
+
+			} else {
+				fprintf(stderr, "%s: invalid \"%s\" flag used.\nuse '-h' for help\n",
+					basename((char *)argv[0]), argv[i]);
+			}
+
+		} else if (argv[i][0] == '-') {
+			// single char flags
 			size_t len = strlen(argv[i]);
 
 			if (len < 2) {
@@ -186,26 +231,11 @@ int main (const int argc, const char *argv[]) {
 					}
 
 					case 's': {
-						if (!argv[i + 1]) {
-							fprintf(stderr, "%s: signal argument doesn't exist.\n",
-								basename((char *)argv[0]));
-							break;
+						if (set_return_signal(argv, i) == 0) {
+							sig_flag_used = true;
 						}
-
-						if (!return_sig) {
-							return_sig = arg_to_sig(argv[i + 1]);
-							if (!return_sig) {
-								fprintf(stderr, "%s: signal argument \"%s\" is not a valid signal.\n",
-									basename((char *)argv[0]), argv[i + 1]);
-							}
-
-						} else {
-							fprintf(stderr, "%s: signal argument will be ignored (has already been set).\n",
-								basename((char *)argv[0]));
-						}
-
-						// skip used arg
-						sig_flag_used = true;
+						i++;
+						continue;
 						break;
 					}
 
@@ -235,20 +265,17 @@ int main (const int argc, const char *argv[]) {
 	}
 
 	// set the signals
-	{
-		struct sigaction sig = {0};
-		sig.sa_sigaction = handler;
-		sigemptyset(&sig.sa_mask);
-		sig.sa_flags = SA_SIGINFO;
+	struct sigaction sig = {0};
+	sig.sa_sigaction = handler;
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags = SA_SIGINFO;
 
-		for (size_t i = 0; i < sizeof(sig_enabled); i++) {
-			if (sig_enabled[i] == true) {
+	for (size_t i = 1; i < sizeof(sig_enabled); i++) {
+		if (sig_enabled[i] == false) continue;
 
-				if (sigaction(signals[i].sig, &sig, NULL) != 0) {
-					fprintf(stderr, "%s: failed to setup signal (%s).\n",
-						basename((char *)argv[0]), strerror(errno));
-				}
-			}
+		if (sigaction(signals[i].sig, &sig, NULL) != 0) {
+			fprintf(stderr, "%s: failed to setup signal (%s).\n",
+				basename((char *)argv[0]), strerror(errno));
 		}
 	}
 
