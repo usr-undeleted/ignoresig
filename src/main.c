@@ -1,3 +1,4 @@
+#include <asm-generic/errno-base.h>
 #include <linux/limits.h>
 #include <sys/stat.h>
 #include <stdbool.h>
@@ -14,30 +15,41 @@
 
 #include "utils.h"
 #include "consts.h"
+#include "colors.h"
 
-// sleep indefinitely, and ignore the signals specified by the user
+// whenever enter key is pressed, stop execution
 
 // set to argv[0]
 const char *glob_invoc = NULL;
 size_t  glob_invoc_len = 0;
 
-bool print_msg = 1;
+bool print_msg  = true;
+int  return_sig = 0;
 
 void help(void) {
 	fprintf(stderr,
-		"%s instructions:\n\n"
+		BOLD "%s" RESET " instructions:\n"
+		"\n"
 
-		"flags:\n"
-		"\t-h: show this help message.\n"
-		"\t-n: don't show a message when receiving a signal.\n\n"
+		BOLD "flags:\n" RESET
+		BOLD "\t-h" RESET ": show this help message.\n"
+		BOLD "\t-n" RESET ": don't show a message when receiving a signal.\n"
+		BOLD "\t-s <sig>" RESET ": send a specific signal to whoever sent the original signal.\n"
+		"\n"
 
-		"usage:\n"
-		"\t%s <signals> (flags may be specified, if needed)\n\n"
+		BOLD "usage:\n" RESET
+		"\t%s <signals> (flags may be specified, if needed)\n"
+		"\n"
 
-		"\tsignals to be specified may be any of the valid POSIX linux signals,"
+		"\tSignals to be specified may be any of the valid POSIX linux signals,"
 		"where they will be ignored and shown a message (if enabled), showing who"
 		" sent the signal, and what signal. A signal may be written as its number,"
-		" name, or SIG followed by the name. There's no case-sensitivity.\n"
+		" name, or SIG followed by the name."
+		"\tThere's no case-sensitivity on signal arguments.\n"
+		"\tClicking enter will end execution.\n"
+		"\n"
+
+		"ignoresig is licensed under GPL-V3, FOSS forever! <3\n"
 		,
 
 		basename((char *)glob_invoc),
@@ -72,6 +84,9 @@ void populate_invoc_buffer(char *buf, size_t s, pid_t pid) {
 
 	close(fd);
 }
+
+int self_kill_sig = -1;
+int last_target   = -1;
 
 void handler(int sig, siginfo_t *info, void *ucontext) {
 	(void)ucontext;
@@ -111,20 +126,26 @@ void handler(int sig, siginfo_t *info, void *ucontext) {
 		}
 
 		int sender = info->si_pid == 0 ? access_own_pid() : info->si_pid;
-		printf("[%.*s]: Received SIG%6s (\x1b[3%dm%d\x1b[0m) from \x1b[3%dm%d\x1b[0m (%s)\n",
+		printf("[%.*s]: Received SIG%s (\x1b[3%dm%d\x1b[0m) from \x1b[3%dm%d\x1b[0m (%s)\n",
 			(int)sizeof(formatted_time), formatted_time,
 			sig_to_str(sig),
 			sig    % 7 + 1, sig,
 			sender % 7 + 1, sender,
 			signal_sender_name);
 	}
-}
 
-void error(const char *msg, const bool use_errno) {
-	fprintf(stderr, "%s: %s%s%s%s", basename((char *)glob_invoc), msg,
-		use_errno == true ? " (" : "", use_errno == true ? strerror(errno) : "", use_errno == true ? ").\n" : ".\n");
+	if (return_sig) {
+		// prevent recursive behaviour
+		if (self_kill_sig == return_sig && last_target == access_own_pid()) {
+			printf("%s: preventing recursive signal sending.\n", basename((char *)glob_invoc));
+			self_kill_sig = -1;
 
-	exit(1);
+		} else {
+			self_kill_sig = return_sig;
+			last_target   = info->si_pid == 0 ? access_own_pid() : info->si_pid;
+			kill(info->si_pid, return_sig);
+		}
+	}
 }
 
 int main (const int argc, const char *argv[]) {
@@ -135,68 +156,81 @@ int main (const int argc, const char *argv[]) {
 	bool sig_enabled[signal_cnt];
 	memset(sig_enabled, false, signal_cnt);
 
+	bool sig_flag_used = false;
+
 	for (int i = 1; i < argc; i++) {
+		if (sig_flag_used == true) {
+			sig_flag_used = false;
+			continue;
+		}
+
 		// flags
-		{
-			if (argv[i][0] == '-') {
-				for (size_t j = 1; j < strlen(argv[i]); j++) {
-					switch (argv[i][j]) {
-						case 'h': {
-							help();
+		if (argv[i][0] == '-') {
+			size_t len = strlen(argv[i]);
+
+			if (len < 2) {
+				fprintf(stderr, "%s: a flag must be specified.\n", basename((char *)argv[0]));
+				continue;
+			}
+
+			for (size_t j = 1; j < strlen(argv[i]); j++) {
+				switch (argv[i][j]) {
+					case 'h': {
+						help();
+						break;
+					}
+
+					case 'n': {
+						print_msg = false;
+						break;
+					}
+
+					case 's': {
+						if (!argv[i + 1]) {
+							fprintf(stderr, "%s: signal argument doesn't exist.\n",
+								basename((char *)argv[0]));
 							break;
 						}
 
-						case 'n': {
-							print_msg = false;
-							break;
+						if (!return_sig) {
+							return_sig = arg_to_sig(argv[i + 1]);
+							if (!return_sig) {
+								fprintf(stderr, "%s: signal argument \"%s\" is not a valid signal.\n",
+									basename((char *)argv[0]), argv[i + 1]);
+							}
+
+						} else {
+							fprintf(stderr, "%s: signal argument will be ignored (has already been set).\n",
+								basename((char *)argv[0]));
 						}
 
-						default: {
-							char msg[48] = {0};
-							snprintf(msg, sizeof(msg), "invalid '%c' flag used.\nuse '-h' for help",
-								argv[i][j]);
-							error(msg, false);
-							break;
-						}
+						// skip used arg
+						sig_flag_used = true;
+						break;
+					}
+
+					default: {
+						fprintf(stderr, "%s: invalid '%c' flag used.\nuse '-h' for help\n",
+							basename((char *)argv[0]), argv[i][j]);
+						break;
 					}
 				}
 			}
-		}
 
-		bool minifail = true;
+		} else {
+			bool minifail = true;
 
-		// numbers
-		{
-			char *p = NULL;
-			size_t n = strtol(argv[i], &p, 0);
+			int s = arg_to_sig(argv[i]);
 
-			if ((n >= 1 && n <= signal_cnt) && !*p) {
-				sig_enabled[n] = true;
-				minifail	   = false;
-				fail		   = false;
-				continue;
+			if (s != -1) {
+				sig_enabled[s] = true;
+				fail     = false;
+				minifail = false;
 			}
-		}
 
-		// regular strings
-		{
-			// offset by sizeof("sig")
-			size_t off = 0;
-			if (!strncasecmp(argv[i], "SIG", 3)) off += 3;
-
-			for (size_t j = 0; j < signal_cnt; j++) {
-
-				if (!strcasecmp(signals[j].string, argv[i] + off)) {
-					sig_enabled[j] = true;
-					minifail	   = false;
-					fail		   = false;
-					break;
-				}
+			if (minifail == true) {
+				fprintf(stderr, "%s: invalid signal \"%s\".\n", basename((char *)argv[0]), argv[i]);
 			}
-		}
-
-		if (minifail == true) {
-			fprintf(stderr, "%s: invalid signal \"%s\".\n", basename((char *)argv[0]), argv[i]);
 		}
 	}
 
@@ -211,15 +245,29 @@ int main (const int argc, const char *argv[]) {
 			if (sig_enabled[i] == true) {
 
 				if (sigaction(signals[i].sig, &sig, NULL) != 0) {
-					error("failed to setup signal", true);
+					fprintf(stderr, "%s: failed to setup signal (%s).\n",
+						basename((char *)argv[0]), strerror(errno));
 				}
 			}
 		}
 	}
 
-	if (fail == true) error("no valid signal found", false);
+	if (fail == true) {
+		fprintf(stderr, "%s: no valid signal provided.\n",
+			basename((char *)argv[0]));
+		return 1;
+	}
 
-	while (1) sleep(999);
+	while (1) {
+		char i = 0;
+		read(STDIN_FILENO, &i, 1);
+
+		// ctrl + d
+		if (i) {
+			fprintf(stderr, "%s: aborting (user input)...\n", basename((char *)argv[0]));
+			return 0;
+		}
+	}
 
 	return 0;
 }

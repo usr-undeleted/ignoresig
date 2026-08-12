@@ -1,10 +1,12 @@
 #include <string.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
 #include <ctype.h>
 
 #include "utils.h"
-
+#include "consts.h"
+#include <stdio.h>
 char *sig_to_str(int sig) {
     switch (sig) {
 		case SIGHUP:    {return    "HUP"; break;}
@@ -48,6 +50,30 @@ char *sig_to_str(int sig) {
     }
 
     return "<unknown>";
+}
+
+int arg_to_sig(const char *str) {
+	// numbers
+	char *p = NULL;
+	size_t n = strtol(str, &p, 0);
+
+	if ((n >= 1 && n <= signal_cnt) && !*p) {
+		return n;
+	}
+
+	// regular strings
+	// offset by sizeof("sig")
+	size_t off = 0;
+	if (!strncasecmp(str, "SIG", 3)) off += 3;
+
+	for (size_t j = 0; j < signal_cnt; j++) {
+
+		if (!strcasecmp(signals[j].string, str + off)) {
+			return signals[j].sig;
+		}
+	}
+
+	return -1;
 }
 
 pid_t global_own_pid = -1;

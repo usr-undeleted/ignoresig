@@ -2,9 +2,14 @@
 #define UTILS_H
 
 #include <sys/types.h>
+#define UNKNOWN "<unknown>"
 
 // match sig num to string
+// return NULL on error
 char *sig_to_str(int sig);
+
+// match string to sig num
+int   arg_to_sig(const char *str);
 
 // don't run getpid() twice
 pid_t access_own_pid(void);
