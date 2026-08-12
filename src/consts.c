@@ -4,11 +4,6 @@
 
 const signal_s signals[] = {
 	{
-		.string = "",
-		.sig	= 0,
-	},
-
-	{
 		.string = "HUP",
 		.sig	= SIGHUP,
 	},

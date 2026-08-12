@@ -7,7 +7,7 @@
 #include "utils.h"
 #include "consts.h"
 #include <stdio.h>
-char *sig_to_str(int sig) {
+char *sig_to_str(const int sig) {
     switch (sig) {
 		case SIGHUP:    {return    "HUP"; break;}
 		case SIGINT:    {return    "INT"; break;}
@@ -52,9 +52,9 @@ char *sig_to_str(int sig) {
     return "<unknown>";
 }
 
-int arg_to_sig(const char *str) {
+int str_to_sig(const char *str) {
 	// numbers
-	char *p = NULL;
+	char *p  = NULL;
 	size_t n = strtol(str, &p, 0);
 
 	if ((n >= 1 && n <= signal_cnt) && !*p) {
@@ -66,10 +66,9 @@ int arg_to_sig(const char *str) {
 	size_t off = 0;
 	if (!strncasecmp(str, "SIG", 3)) off += 3;
 
-	for (size_t j = 0; j < signal_cnt; j++) {
-
-		if (!strcasecmp(signals[j].string, str + off)) {
-			return signals[j].sig;
+	for (size_t i = 0; i < signal_cnt; i++) {
+		if (!strcasecmp(signals[i].string, str + off)) {
+			return signals[i].sig;
 		}
 	}
 

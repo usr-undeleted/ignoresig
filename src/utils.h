@@ -9,7 +9,7 @@
 char *sig_to_str(int sig);
 
 // match string to sig num
-int   arg_to_sig(const char *str);
+int   str_to_sig(const char *str);
 
 // don't run getpid() twice
 pid_t access_own_pid(void);

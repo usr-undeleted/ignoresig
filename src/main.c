@@ -49,13 +49,14 @@ void help(void) {
 		"\tClicking enter will end execution.\n"
 		"\n"
 
-		"ignoresig is licensed under GPL-V3, FOSS forever! <3\n"
+		"%s is licensed under GPL-V3, FOSS forever! <3\n"
 		,
 
 		basename((char *)glob_invoc),
 
-		basename((char *)glob_invoc)
+		basename((char *)glob_invoc),
 
+		basename((char *)glob_invoc)
 	);
 
 	exit(0);
@@ -156,7 +157,7 @@ int set_return_signal(const char *argv[], const int i) {
 	}
 
 	if (!return_sig) {
-		return_sig = arg_to_sig(argv[i + 1]);
+		return_sig = str_to_sig(argv[i + 1]);
 		if (!return_sig) {
 			fprintf(stderr, "%s: signal argument \"%s\" is not a valid signal.\n",
 				basename((char *)argv[0]), argv[i + 1]);
@@ -177,10 +178,15 @@ int main (const int argc, const char *argv[]) {
 	glob_invoc_len = strlen(argv[0]);
 	bool fail = true;
 
-	bool sig_enabled[signal_cnt];
-	memset(sig_enabled, false, signal_cnt);
-
 	bool sig_flag_used = false;
+
+	struct sigaction sig = {0};
+	sig.sa_sigaction = handler;
+	sigemptyset(&sig.sa_mask);
+	sig.sa_flags = SA_SIGINFO;
+
+	bool set_sigs[signal_cnt + 1];
+	memset(set_sigs, false, sizeof(set_sigs));
 
 	for (int i = 1; i < argc; i++) {
 		if (sig_flag_used == true) {
@@ -250,12 +256,20 @@ int main (const int argc, const char *argv[]) {
 		} else {
 			bool minifail = true;
 
-			int s = arg_to_sig(argv[i]);
+			int s = str_to_sig(argv[i]);
 
 			if (s != -1) {
-				sig_enabled[s] = true;
-				fail     = false;
-				minifail = false;
+				if (set_sigs[s] == true) continue;
+
+				if (sigaction(s, &sig, NULL) != 0) {
+					fprintf(stderr, "%s: failed to setup signal (%s).\n",
+						basename((char *)argv[0]), strerror(errno));
+					continue;
+				}
+
+				set_sigs[s]    = true;
+				fail           = false;
+				minifail       = false;
 			}
 
 			if (minifail == true) {
@@ -264,23 +278,8 @@ int main (const int argc, const char *argv[]) {
 		}
 	}
 
-	// set the signals
-	struct sigaction sig = {0};
-	sig.sa_sigaction = handler;
-	sigemptyset(&sig.sa_mask);
-	sig.sa_flags = SA_SIGINFO;
-
-	for (size_t i = 1; i < sizeof(sig_enabled); i++) {
-		if (sig_enabled[i] == false) continue;
-
-		if (sigaction(signals[i].sig, &sig, NULL) != 0) {
-			fprintf(stderr, "%s: failed to setup signal (%s).\n",
-				basename((char *)argv[0]), strerror(errno));
-		}
-	}
-
 	if (fail == true) {
-		fprintf(stderr, "%s: no valid signal provided.\n",
+		fprintf(stderr, "%s: no signal set.\n",
 			basename((char *)argv[0]));
 		return 1;
 	}
